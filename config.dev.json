@@ -1,6 +1,6 @@
 {
     "AWS_REGION": "us-east-1",
     "TRANSFERS_COLLECTION_NAME": "transfers",
-    "AWS_ACCESS": "AKIAZZA64KBJTH5CS2GQ",
-    "AWS_SECRET": "0PLUMSEtOwmqfZ+B3Mdyohd7eQqopLw3JeqrMWn0"
+    "AWS_ACCESS": "YourKeyHere",
+    "AWS_SECRET": "YourKeyHere"
 }

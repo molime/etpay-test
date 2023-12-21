@@ -1,0 +1,212 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: transfers
+# app and org for use with dashboard.serverless.com
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  apiName: etp-test-transfers
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+      - logs:*
+      Resource:
+        - arn:aws:logs:*:*:*
+    - Effect: Allow
+      Action:
+      - lambda:InvokeFunction
+      - ec2:AttachNetworkInterface
+      - ec2:CreateNetworkInterface
+      - ec2:DeleteNetworkInterface
+      - ec2:DescribeInstances
+      - ec2:DescribeNetworkInterfaces
+      - ec2:DetachNetworkInterface
+      - ec2:ModifyNetworkInterfaceAttribute
+      - ec2:ResetNetworkInterfaceAttribute
+      - ecs:RunTask
+      - iam:GetRole
+      - iam:PassRole
+      - dynamodb:Query
+      - dynamodb:Scan
+      - dynamodb:GetRecords
+      - dynamodb:GetItem
+      - dynamodb:DescribeTable
+      - dynamodb:BatchGetItem
+      - dynamodb:BatchWriteItem
+      - dynamodb:DeleteItem
+      - dynamodb:PutItem
+      - dynamodb:UpdateItem
+      - dynamodb:UpdateTimeToLive
+      Resource:
+        - "*"
+  deploymentBucket:
+    name: etp-test-bucket
+    serverSideEncryption: AES256
+package:
+  exclude:
+    - config*
+    - node_modules*
+
+# you can overwrite defaults here
+#  stage: dev
+#  region: us-east-1
+
+# you can add statements to the Lambda function's IAM Role here
+#  iam:
+#    role:
+#      statements:
+#        - Effect: "Allow"
+#          Action:
+#            - "s3:ListBucket"
+#          Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
+#        - Effect: "Allow"
+#          Action:
+#            - "s3:PutObject"
+#          Resource:
+#            Fn::Join:
+#              - ""
+#              - - "arn:aws:s3:::"
+#                - "Ref" : "ServerlessDeploymentBucket"
+#                - "/*"
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+# you can add packaging information here
+#package:
+#  patterns:
+#    - '!exclude-me.js'
+#    - '!exclude-me-dir/**'
+#    - include-me.js
+#    - include-me-dir/**
+
+functions:
+  # hello:
+  #   handler: handler.hello
+  #   timeout: 30
+  #   memorySize: 128
+  #   warmup: true
+  insertTransfer:
+    handler: lambdas/InsertTransfer.insertTransfer
+    events:
+      - http:
+          path: transfers/insert
+          method: post
+    environment:
+      VERBOSE: 1
+      AWS_ACCESS: ${file(./config.dev.json):AWS_ACCESS}
+      AWS_SECRET: ${file(./config.dev.json):AWS_SECRET}
+      TRANSFERS_COLLECTION_NAME: ${file(./config.dev.json):TRANSFERS_COLLECTION_NAME, 'transfers'}
+  readTransfer:
+    handler: lambdas/ReadTransfer.readTransfer
+    events:
+      - http:
+          path: transfers/{id}
+          method: get
+    environment:
+      VERBOSE: 1
+      AWS_ACCESS: ${file(./config.dev.json):AWS_ACCESS}
+      AWS_SECRET: ${file(./config.dev.json):AWS_SECRET}
+      TRANSFERS_COLLECTION_NAME: ${file(./config.dev.json):TRANSFERS_COLLECTION_NAME, 'transfers'}
+  updateTransfer:
+    handler: lambdas/UpdateTransfer.updateTransfer
+    events:
+      - http:
+          path: transfers/{id}
+          method: put
+    environment:
+      VERBOSE: 1
+      AWS_ACCESS: ${file(./config.dev.json):AWS_ACCESS}
+      AWS_SECRET: ${file(./config.dev.json):AWS_SECRET}
+      TRANSFERS_COLLECTION_NAME: ${file(./config.dev.json):TRANSFERS_COLLECTION_NAME, 'transfers'}
+  deleteTransfer:
+    handler: lambdas/DeleteTransfer.deleteTransfer
+    events:
+      - http:
+          path: transfers/{id}
+          method: delete
+    environment:
+      VERBOSE: 1
+      AWS_ACCESS: ${file(./config.dev.json):AWS_ACCESS}
+      AWS_SECRET: ${file(./config.dev.json):AWS_SECRET}
+      TRANSFERS_COLLECTION_NAME: ${file(./config.dev.json):TRANSFERS_COLLECTION_NAME, 'transfers'}
+plugins:
+  - serverless-offline
+  - serverless-plugin-warmup
+  - serverless-prune-plugin
+  - serverless-layers
+  - serverless-deployment-bucket
+custom:
+  prune:
+    automatic: true
+    number: 3
+#    The following are a few example events you can configure
+#    NOTE: Please make sure to change your handler code to work with those events
+#    Check the event documentation for details
+#    events:
+#      - httpApi:
+#          path: /users/create
+#          method: get
+#      - websocket: $connect
+#      - s3: ${env:BUCKET}
+#      - schedule: rate(10 minutes)
+#      - sns: greeter-topic
+#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
+#      - alexaSkill: amzn1.ask.skill.xx-xx-xx-xx
+#      - alexaSmartHome: amzn1.ask.skill.xx-xx-xx-xx
+#      - iot:
+#          sql: "SELECT * FROM 'some_topic'"
+#      - cloudwatchEvent:
+#          event:
+#            source:
+#              - "aws.ec2"
+#            detail-type:
+#              - "EC2 Instance State-change Notification"
+#            detail:
+#              state:
+#                - pending
+#      - cloudwatchLog: '/aws/lambda/hello'
+#      - cognitoUserPool:
+#          pool: MyUserPool
+#          trigger: PreSignUp
+#      - alb:
+#          listenerArn: arn:aws:elasticloadbalancing:us-east-1:XXXXXX:listener/app/my-load-balancer/50dc6c495c0c9188/
+#          priority: 1
+#          conditions:
+#            host: example.com
+#            path: /hello
+
+#    Define function environment variables here
+#    environment:
+#      variable2: value2
+
+# you can add CloudFormation resource templates here
+#resources:
+#  Resources:
+#    NewResource:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: my-new-bucket
+#  Outputs:
+#     NewOutput:
+#       Description: "Description for the output"
+#       Value: "Some output value"

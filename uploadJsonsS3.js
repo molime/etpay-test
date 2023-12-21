@@ -5,8 +5,8 @@ const path = require('path');
 // Configura tus credenciales, por ejemplo, a través de una configuración de entorno o un perfil config.
 AWS.config.update({
     region: "us-east-1",
-    accessKeyId: "AKIAZZA64KBJTH5CS2GQ",
-    secretAccessKey: "0PLUMSEtOwmqfZ+B3Mdyohd7eQqopLw3JeqrMWn0"
+    accessKeyId: "YourAccessKeyID",
+    secretAccessKey: "YourSecretAccessKey"
 });
 
 // Crea una instancia del SDK S3.
